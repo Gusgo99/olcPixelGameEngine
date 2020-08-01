@@ -435,6 +435,8 @@ namespace olc
 		Sprite();
 		Sprite(const std::string& sImageFile, olc::ResourcePack *pack = nullptr);
 		Sprite(int32_t w, int32_t h);
+		Sprite(const Sprite &origin);
+		Sprite& operator=(const Sprite &origin);
 		~Sprite();
 
 	public:
@@ -895,6 +897,23 @@ namespace olc
 		pColData = new Pixel[width * height];
 		for (int32_t i = 0; i < width*height; i++)
 			pColData[i] = Pixel();
+	}
+	
+	Sprite::Sprite(const Sprite &origin)
+	{ operator=(origin); }
+	
+	Sprite& Sprite::operator=(const Sprite &origin)
+	{
+		width = origin.width;	height = origin.height;
+		if(pColData) delete[] pColData;
+		pColData = new Pixel[width * height];
+		modeSample = origin.modeSample;
+		for(size_t i = 0; i < (width * height); i++) {
+			pColData[i] = origin.pColData[i];
+			
+		}
+		
+		return (*this);
 	}
 
 	Sprite::~Sprite()
