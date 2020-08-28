@@ -436,7 +436,9 @@ namespace olc
 		Sprite(const std::string& sImageFile, olc::ResourcePack *pack = nullptr);
 		Sprite(int32_t w, int32_t h);
 		Sprite(const Sprite &origin);
+		Sprite(Sprite &&origin);
 		Sprite& operator=(const Sprite &origin);
+		Sprite& operator=(Sprite &&origin);
 		~Sprite();
 
 	public:
@@ -900,18 +902,37 @@ namespace olc
 	}
 	
 	Sprite::Sprite(const Sprite &origin)
-	{ operator=(origin); }
+	{
+		width = origin.width;	height = origin.height;
+		pColData = new Pixel[width * height];
+		modeSample = origin.modeSample;
+		for(size_t i = 0; i < (width * height); i++)
+			pColData[i] = origin.pColData[i];
+	}
+	
+	Sprite::Sprite(Sprite &&origin)
+	{
+		width = std::exchange(origin.width, 0);
+		height = std::exchange(origin.height, 0);
+		modeSample = std::exchange(origin.modeSample, Mode::NORMAL);
+		pColData = std::exchange(origin.pColData, nullptr);
+	}
 	
 	Sprite& Sprite::operator=(const Sprite &origin)
 	{
-		width = origin.width;	height = origin.height;
-		if(pColData) delete[] pColData;
-		pColData = new Pixel[width * height];
-		modeSample = origin.modeSample;
-		for(size_t i = 0; i < (width * height); i++) {
-			pColData[i] = origin.pColData[i];
-			
-		}
+		Sprite temp(origin);
+		std::swap(*this, temp);
+		
+		return (*this);
+	}
+	
+	Sprite& Sprite::operator=(Sprite &&origin)
+	{
+		Sprite temp(std::move(origin));
+		std::swap(width, temp.width);
+		std::swap(height, temp.height);
+		std::swap(pColData, temp.pColData);
+		std::swap(modeSample, temp.modeSample);
 		
 		return (*this);
 	}
